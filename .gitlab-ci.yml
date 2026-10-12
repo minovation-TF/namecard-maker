@@ -1,0 +1,17 @@
+image: node:22
+
+stages:
+  - build
+
+build:
+  stage: build
+  script:
+    - corepack enable
+    - pnpm install --frozen-lockfile
+    - pnpm exec tsc --noEmit
+    - pnpm build
+  artifacts:
+    when: always
+    paths:
+      - dist/
+    expire_in: 7 days
