@@ -1,0 +1,36 @@
+[
+  {
+    "id": "meritz-ko-black",
+    "label": "한글 메리츠화재 · 검정",
+    "src": "/assets/company-variants/meritz-ko-black.png",
+    "thumbnail": "/assets/company-variants/meritz-ko-black.png",
+    "imageWidth": 2172,
+    "imageHeight": 724,
+    "crop": [
+      0.01841620626151013,
+      0.16298342541436464,
+      0.9631675874769797,
+      0.611878453038674
+    ],
+    "category": "logos",
+    "transparent": true,
+    "searchText": "한글 메리츠화재 · 검정 회사 로고 CI 흑백 블랙"
+  },
+  {
+    "id": "partners-ko-black",
+    "label": "한글 메리츠 파트너스 · 검정",
+    "src": "/assets/company-variants/partners-ko-black.png",
+    "thumbnail": "/assets/company-variants/partners-ko-black.png",
+    "imageWidth": 2172,
+    "imageHeight": 724,
+    "crop": [
+      0.0032228360957642726,
+      0.2886740331491713,
+      0.990791896869245,
+      0.425414364640884
+    ],
+    "category": "logos",
+    "transparent": true,
+    "searchText": "한글 메리츠 파트너스 · 검정 회사 로고 CI 흑백 블랙"
+  }
+]

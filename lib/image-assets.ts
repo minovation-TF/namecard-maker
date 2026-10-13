@@ -1,3 +1,4 @@
+import companyVariants from "./generated/company-variants.json";
 import credentials from "./generated/credential-catalog.json";
 import catalog from "./generated/meritz-catalog.json";
 export type ImageAsset={id:string;label:string;src:string;imageWidth:number;imageHeight:number;crop:[number,number,number,number];category?:string;thumbnail?:string;character?:string;transparent?:boolean;searchText?:string;sourceUrl?:string;usageNote?:string};
@@ -9,7 +10,7 @@ export const commonImageAssets:ImageAsset[]=[
   ci("meritz-combined","영문 + 한글 CI",[324,1046,976,146])
 ];
 export const meritzAssets:ImageAsset[]=catalog.map(a=>({...a,crop:a.crop as [number,number,number,number]}));
-export const companyAssets=commonImageAssets.slice(0,4).map(a=>({...a,category:"logos",thumbnail:`/assets/catalog-common/${a.id}.png`,transparent:a.src.endsWith(".png"),searchText:a.label}));
+export const companyAssets:ImageAsset[]=[...commonImageAssets.slice(0,4).map(a=>({...a,category:"logos",thumbnail:`/assets/catalog-common/${a.id}.png`,transparent:a.src.endsWith(".png"),searchText:a.label})),...companyVariants.map(a=>({...a,crop:a.crop as [number,number,number,number]}))];
 export const credentialAssets:ImageAsset[]=credentials.map(a=>({...a,crop:a.crop as [number,number,number,number]}));
 export const catalogAssets=[...companyAssets,...credentialAssets,...meritzAssets];
 export const imageAssets=[...companyAssets,...credentialAssets,...meritzAssets];
