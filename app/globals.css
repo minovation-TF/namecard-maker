@@ -81,3 +81,5 @@ button:focus-visible,a:focus-visible,.card-stage:focus-visible{outline:2px solid
 
 
 .credential-launcher{margin:16px 0 20px;font-size:13px}.credential-launcher>span{margin-left:auto;color:var(--workroom-muted);font-size:11px}.catalog-detail .credential-usage{font-size:11px;line-height:1.7;margin:0 0 10px}.credential-source{font-size:11px;text-decoration:underline;display:inline-block;margin-bottom:16px;color:var(--workroom-muted)}
+
+.canvas-dimensions{position:absolute;right:26px;bottom:20px;font-size:11px;color:var(--workroom-muted);font-variant-numeric:tabular-nums;pointer-events:none}@media(max-width:480px){.canvas-dimensions{right:15px;bottom:15px}}@media print{.canvas-dimensions{display:none!important}}

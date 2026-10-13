@@ -5,7 +5,7 @@ root=Path(__file__).resolve().parents[1]
 bundle=root/'asset-bundles'
 manifest_file=bundle/'manifest.json'
 if not manifest_file.is_file():
-    if len(list((root/'public/assets/meritz').rglob('*.png')))==592:
+    if len(list((root/'public/assets/meritz').rglob('*.png')))==587:
         print('Gallery originals are already present; no bundle restoration needed.')
         sys.exit(0)
     raise SystemExit('Missing asset-bundles/manifest.json. Download the complete repository first.')
@@ -29,8 +29,14 @@ with tempfile.TemporaryDirectory(prefix='namecard-assets-') as temporary:
             path=Path(info.filename)
             if path.is_absolute()or '..'in path.parts or not info.filename.startswith('public/assets/'):
                 raise SystemExit('Invalid asset path in archive.')
+            if path.parts[:4]in [('public','assets','meritz','reference-originals'),('public','assets','meritz-thumbs','reference-originals')]:continue
             destination=root/path
             if not destination.resolve().is_relative_to((root/'public/assets').resolve()):raise SystemExit('Asset path escapes the repository.')
             destination.parent.mkdir(parents=True,exist_ok=True)
             with zipped.open(info)as source,destination.open('wb')as target:shutil.copyfileobj(source,target)
-print(f"Restored {manifest['file_count']} asset files.")
+for folder in [root/'public/assets/meritz/reference-originals',root/'public/assets/meritz-thumbs/reference-originals']:
+    if folder.exists():shutil.rmtree(folder)
+catalog=json.loads((root/'lib/generated/meritz-catalog.json').read_text())
+source_file=root/'public/assets/meritz/source.json'
+source_meta=json.loads(source_file.read_text());source_meta.update(pngCount=len(catalog),transparentCount=sum(a['transparent']for a in catalog));source_file.write_text(json.dumps(source_meta,ensure_ascii=False,indent=2))
+print("Restored gallery assets; removed background originals stay excluded.")
