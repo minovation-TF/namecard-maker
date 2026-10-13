@@ -1,6 +1,7 @@
 import {getImageAsset,type ImageAsset} from "./image-assets";
+import {cardFonts,getCardFont,cardFontStack} from "./card-fonts";
 export type Side="front"|"back";
-export type CardElement={id:string;label:string;kind:"text"|"image";text?:string;textAlign?:"left"|"center"|"right";x:number;y:number;width:number;size:number;color:string;bold:boolean;rotation:number;visible:boolean;assetId?:string;src?:string;imageWidth?:number;imageHeight?:number;crop?:[number,number,number,number];flipX?:boolean;layer?:"back"|"front"};
+export type CardElement={id:string;label:string;kind:"text"|"image";text?:string;textAlign?:"left"|"center"|"right";fontFamily?:string;x:number;y:number;width:number;size:number;color:string;bold:boolean;rotation:number;visible:boolean;assetId?:string;src?:string;imageWidth?:number;imageHeight?:number;crop?:[number,number,number,number];flipX?:boolean;layer?:"back"|"front"};
 export type CardState={version:3;orientation:"horizontal"|"vertical";cards:Record<"horizontal"|"vertical",Record<Side,{background:string;elements:CardElement[]}>>};
 export const dimensions=(o:CardState["orientation"]):[number,number]=>o==="horizontal"?[900,500]:[500,900];
 export const defaultDetails:Record<string,string>={name:"김메리",role:"메리츠화재 파트너스",title:"멘토",mobile:"010-1234-5678",fax:"FAX 0505-123-4567",email:"example@example.com",web:"www.meritzfire.com",company:"메리츠화재해상보험(주)",address:"서울특별시 강남구 강남대로 382, meritz TOWER"};
@@ -16,14 +17,14 @@ export function makeInitial():CardState {
   return {version:3,orientation:"horizontal",cards:{horizontal:{front:card(false,false),back:card(false,true)},vertical:{front:card(true,false),back:card(true,true)}}};
 }
 let measure:CanvasRenderingContext2D|null=null;
-export function wrapText(value:string,width:number,size:number,bold:boolean):string[]{
-  if(typeof document!=="undefined"){measure??=document.createElement("canvas").getContext("2d");if(measure)measure.font=`${bold?700:400} ${size}px LabSans, sans-serif`;}
+export function wrapText(value:string,width:number,size:number,bold:boolean,fontFamily?:string):string[]{
+  if(typeof document!=="undefined"){measure??=document.createElement("canvas").getContext("2d");if(measure)measure.font=`${bold?700:400} ${size}px ${cardFontStack(fontFamily)}`;}
   const result:string[]=[];for(const p of value.split("\n")){let line="";for(const char of Array.from(p)){const test=line+char;const length=measure?measure.measureText(test).width:Array.from(test).reduce((n,c)=>n+(c.charCodeAt(0)>255?size:size*.56),0);if(length>width&&line){result.push(line);line=char;}else line=test;}result.push(line);}return result;
 }
 export const imageSource=(e:CardElement)=>e.src||"";
 export const imageCrop=(e:CardElement):[number,number,number,number]=>e.crop||[0,0,1,1];
 export const imageRatio=(e:CardElement)=>((e.imageWidth||1280)*imageCrop(e)[2])/((e.imageHeight||1280)*imageCrop(e)[3]);
-export function elementHeight(e:CardElement){return e.kind==="image"?e.width/imageRatio(e):wrapText(e.text||"",e.width,e.size,e.bold).length*e.size*1.35;}
+export function elementHeight(e:CardElement){return e.kind==="image"?e.width/imageRatio(e):wrapText(e.text||"",e.width,e.size,e.bold,e.fontFamily).length*e.size*1.35;}
 export function renderElements(elements:CardElement[]):CardElement[]{
   const rank=(e:CardElement)=>e.layer==="front"?1:e.layer==="back"?-1:0;
   return [...elements].sort((a,b)=>rank(a)-rank(b));
@@ -37,8 +38,11 @@ export function updateElement(state:CardState,side:Side,id:string,patch:Partial<
   e.x=Math.round(Math.max(dx,Math.min(w-e.width-dx,Number.isFinite(e.x)?e.x:0)));e.y=Math.round(Math.max(dy,Math.min(h-eh-dy,Number.isFinite(e.y)?e.y:0)));return next;
 }
 const esc=(v:string)=>v.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]!));
-export function svgMarkup(state:CardState,side:Side,selection:string|null=null,guides=false,assets:{images?:Record<string,string>;font?:string}={}):string {
-  const [w,h]=dimensions(state.orientation),card=state.cards[state.orientation][side];const items=renderElements(card.elements).filter(e=>e.visible).map(e=>{const lines=wrapText(e.text||"",e.width,e.size,e.bold),eh=elementHeight(e);return `<g data-element="${esc(e.id)}" transform="translate(${e.x} ${e.y}) rotate(${e.rotation} ${e.width/2} ${eh/2})" style="cursor:move"><rect width="${e.width}" height="${eh}" fill="transparent"/>${e.kind==="image"?imageSvg(e,assets.images?.[imageSource(e)]):`<text fill="${e.color}" font-family="LabSans, Noto Sans KR, Malgun Gothic, sans-serif" font-size="${e.size}" font-weight="${e.bold?700:400}" text-anchor="${e.textAlign==="center"?"middle":e.textAlign==="right"?"end":"start"}" dominant-baseline="text-before-edge">${lines.map((l,i)=>`<tspan x="${e.textAlign==="center"?e.width/2:e.textAlign==="right"?e.width:0}" y="${i*e.size*1.35}">${esc(l)}</tspan>`).join("")}</text>`}${e.id===selection?`<rect class="editing-guide" x="-5" y="-5" width="${e.width+10}" height="${eh+10}" fill="none" stroke="#ef3219" stroke-width="2" stroke-dasharray="5 3" pointer-events="none"/>`:""}</g>`;}).join("");return `<svg xmlns="http://www.w3.org/2000/svg" width="${w/10}mm" height="${h/10}mm" viewBox="0 0 ${w} ${h}" role="img" aria-label="${side==="front"?"앞면":"뒷면"} 명함"><defs>${assets.font?`<style>@font-face{font-family:LabSans;src:url('${assets.font}') format('woff2');font-weight:100 900}</style>`:""}</defs><rect width="${w}" height="${h}" fill="${card.background}"/>${guides?`<rect class="editing-guide" x="30" y="30" width="${w-60}" height="${h-60}" fill="none" stroke="${card.background==="#171717"?"#a0a0a0":"#d8d8d8"}" stroke-width="1" stroke-dasharray="5 5" pointer-events="none"/>`:""}${items}</svg>`;
+export function svgMarkup(state:CardState,side:Side,selection:string|null=null,guides=false,assets:{images?:Record<string,string>;font?:string;fonts?:Record<string,string>}={}):string {
+  const [w,h]=dimensions(state.orientation),card=state.cards[state.orientation][side];
+  const families=new Set(card.elements.filter(e=>e.visible&&e.kind==="text").map(e=>getCardFont(e.fontFamily).family));
+  const fontStyles=cardFonts.filter(f=>families.has(f.family)).flatMap(f=>f.faces.map(face=>{const data=assets.fonts?.[face.src]||(f.family==="LabSans"?assets.font:undefined);return data?`@font-face{font-family:"${f.family}";src:url('${data}') format('${face.format}');font-weight:${face.weight};}`:"";})).join("");
+  const items=renderElements(card.elements).filter(e=>e.visible).map(e=>{const lines=wrapText(e.text||"",e.width,e.size,e.bold,e.fontFamily),eh=elementHeight(e);return `<g data-element="${esc(e.id)}" transform="translate(${e.x} ${e.y}) rotate(${e.rotation} ${e.width/2} ${eh/2})" style="cursor:move"><rect width="${e.width}" height="${eh}" fill="transparent"/>${e.kind==="image"?imageSvg(e,assets.images?.[imageSource(e)]):`<text fill="${e.color}" font-family="${esc(cardFontStack(e.fontFamily))}" font-size="${e.size}" font-weight="${e.bold?700:400}" text-anchor="${e.textAlign==="center"?"middle":e.textAlign==="right"?"end":"start"}" dominant-baseline="text-before-edge">${lines.map((l,i)=>`<tspan x="${e.textAlign==="center"?e.width/2:e.textAlign==="right"?e.width:0}" y="${i*e.size*1.35}">${esc(l)}</tspan>`).join("")}</text>`}${e.id===selection?`<rect class="editing-guide" x="-5" y="-5" width="${e.width+10}" height="${eh+10}" fill="none" stroke="#ef3219" stroke-width="2" stroke-dasharray="5 3" pointer-events="none"/>`:""}</g>`;}).join("");return `<svg xmlns="http://www.w3.org/2000/svg" width="${w/10}mm" height="${h/10}mm" viewBox="0 0 ${w} ${h}" role="img" aria-label="${side==="front"?"앞면":"뒷면"} 명함"><defs>${fontStyles?`<style>${fontStyles}</style>`:""}</defs><rect width="${w}" height="${h}" fill="${card.background}"/>${guides?`<rect class="editing-guide" x="30" y="30" width="${w-60}" height="${h-60}" fill="none" stroke="${card.background==="#171717"?"#a0a0a0":"#d8d8d8"}" stroke-width="1" stroke-dasharray="5 5" pointer-events="none"/>`:""}${items}</svg>`;
 }
 
 export function imageSvg(e:CardElement,embedded?:string):string {
@@ -49,7 +53,7 @@ export function restoreState(value:unknown):CardState {
   const s=value as CardState;if(!s||![2,3].includes(s.version)||!s.cards?.horizontal?.front?.elements||!s.cards?.vertical?.back?.elements)throw new Error("Invalid draft");
   const next=structuredClone(s);next.version=3;
   for(const o of ["horizontal","vertical"] as const)for(const side of ["front","back"] as const){const card=next.cards[o][side];
-    if(card.background==="#202622")card.background="#171717";for(const e of card.elements){if(e.color==="#202622")e.color="#171717";if(e.color==="#e93324")e.color="#ef3219";}
+    if(card.background==="#202622")card.background="#171717";for(const e of card.elements){if(e.fontFamily)e.fontFamily=getCardFont(e.fontFamily).family;if(e.color==="#202622")e.color="#171717";if(e.color==="#e93324")e.color="#ef3219";}
     const previousDemo=side==="front"&&card.elements.find(e=>e.id==="name")?.text===previousDemoDetails.name&&card.elements.find(e=>e.id==="role")?.text===previousDemoDetails.role;
     if(previousDemo)for(const e of card.elements)if(e.kind==="text"&&previousDemoDetails[e.id]!==undefined&&e.text===previousDemoDetails[e.id])e.text=defaultDetails[e.id];
     card.elements=card.elements.filter(e=>!(e.kind==="image"&&(e.assetId==="worry-doll"||e.src==="/assets/worry-doll.png"||e.id==="doll"&&!e.src)));
