@@ -58,7 +58,7 @@ export function restoreState(value:unknown):CardState {
     card.elements=card.elements.filter(e=>{if(e.kind!=="text"||e.label!=="추가 텍스트"||e.text!=="새로운 문구")return true;if(customExtras||keptPlaceholder)return false;keptPlaceholder=true;return true;});
     const logo=card.elements.find(e=>e.id==="logo");
     if(logo?.kind==="text"&&logo.text==="meritz"){const replacement=imageElement("logo-en",getImageAsset("meritz-en"),logo.x,logo.y,Math.min(logo.width,side==="back"?210:o==="vertical"?290:340));Object.assign(logo,replacement,{visible:logo.visible,rotation:logo.rotation});if(side==="back")card.elements.push(imageElement("logo-ko",getImageAsset("meritz-ko"),logo.x,Math.round(logo.y+elementHeight(logo)+20),side==="back"?160:240));}
-    for(const e of card.elements)if(e.kind==="image"){const asset=e.assetId?getImageAsset(e.assetId):undefined;if(asset)Object.assign(e,{thumbnail:asset.thumbnail,...(!e.src?{src:asset.src,imageWidth:asset.imageWidth,imageHeight:asset.imageHeight,crop:asset.crop}:{})});}
+    for(const e of card.elements)if(e.kind==="image"){const asset=e.assetId?getImageAsset(e.assetId):undefined;if(asset)Object.assign(e,{thumbnail:asset.thumbnail,...(!e.src?{imageWidth:asset.imageWidth,imageHeight:asset.imageHeight,crop:asset.crop}:{}),...(!e.src||(e.src.startsWith("/")&&e.src.includes("/assets/"))?{src:asset.src}:{})});}
 
   }
   return next;

@@ -4,7 +4,7 @@ import react from "@vitejs/plugin-react";
 import {defineConfig} from "vite";
 
 const projectRoot = path.dirname(fileURLToPath(import.meta.url));
-const base = process.env.PAGES_BASE_PATH || "/pdf-editor/namecard-maker/";
+const base = process.env.PAGES_BASE_PATH || "/namecard-maker/";
 if (!base.startsWith("/") || !base.endsWith("/")) {
   throw new Error("PAGES_BASE_PATH must start and end with a slash.");
 }
