@@ -2,6 +2,14 @@
 
 가로형·세로형 명함을 편집하고 PNG·JPG·SVG로 저장하는 독립 웹앱입니다.
 
+## GitHub Pages 배포
+
+`pages/index.html`과 `pages/main.tsx`는 기존 명함 편집 화면을 브라우저에서 직접 실행하는 정적 진입점입니다. `pnpm install --frozen-lockfile` 후 `pnpm build:pages`로 빌드합니다. 필요한 갤러리 이미지는 빌드 전에 검증된 묶음에서 자동 복원합니다.
+
+결과는 `dist-pages/`에 생성되며, 기본 배포 경로는 `/pdf-editor/namecard-maker/`입니다. 다른 경로로 배포할 때는 빌드 전에 `PAGES_BASE_PATH`를 앞뒤 `/`가 있는 경로로 지정하세요. 이미지·글꼴 주소도 같은 경로를 사용합니다. 기존 Sites용 `pnpm build`와 호스팅 설정은 유지합니다.
+
+현재 계정은 비공개 저장소의 Pages를 지원하지 않아 소스는 비공개로 유지하고, `minovation-TF/pdf-editor`의 `namecard-maker/`에 정적 결과물을 게시합니다. 게시 저장소 루트의 `.nojekyll`을 유지해야 합니다.
+
 ## 편집 방법
 
 - 요소 클릭: 선택, 더블클릭: 문구 수정

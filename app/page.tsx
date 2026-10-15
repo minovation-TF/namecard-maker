@@ -1,5 +1,6 @@
 "use client";
 import {useEffect,useRef,useState} from "react";
+import {assetPath} from "@/lib/asset-path";
 import {CreditCard,Download,ChevronDown,ChevronRight,Undo2,Redo2,RotateCcw,Type,Move,Heart,Check,Eye,EyeOff,Plus,Trash2,LockKeyhole,ImagePlus,FlipHorizontal2,Upload,Pencil,AlignLeft,AlignCenter,AlignRight,ArrowDownToLine,ArrowUpToLine,Star,Clock3,MoreHorizontal,X} from "lucide-react";
 import {Tabs,TabsList,TabsTrigger,TabsContent} from "@/components/ui/tabs";
 import {Slider} from "@/components/ui/slider";
@@ -43,7 +44,7 @@ export default function Studio(){
   useEffect(()=>{
     try{const raw=localStorage.getItem("namecard-maker-v3");if(raw){const s=JSON.parse(raw);setState(restoreState(s));}}catch{toast("저장된 정보를 읽지 못해 기본 명함을 열었습니다.");}setReady(true);
     const dataURL=async(p:string)=>{const response=await fetch(p);if(!response.ok)throw new Error("Asset unavailable");const blob=await response.blob();return await new Promise<string>((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result as string);r.onerror=reject;r.readAsDataURL(blob);});};
-    dataURL("/assets/lab-sans.woff2").then(font=>{assets.current.font=font;}).catch(()=>{});document.fonts.ready.then(()=>setFontReady(true));
+    dataURL(assetPath("/assets/lab-sans.woff2")).then(font=>{assets.current.font=font;}).catch(()=>{});document.fonts.ready.then(()=>setFontReady(true));
   },[]);
   useEffect(()=>{if(!ready)return;try{localStorage.setItem("namecard-maker-v3",JSON.stringify(state));setSaved(true);}catch{setSaved(false);}},[state,ready]);
   function commit(next:CardState){setHistory(a=>[...a.slice(-49),stateRef.current]);setFuture([]);setState(next);}

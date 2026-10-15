@@ -5,7 +5,6 @@ export type CardElement={id:string;label:string;kind:"text"|"image";text?:string
 export type CardState={version:3;orientation:"horizontal"|"vertical";cards:Record<"horizontal"|"vertical",Record<Side,{background:string;elements:CardElement[]}>>};
 export const dimensions=(o:CardState["orientation"]):[number,number]=>o==="horizontal"?[900,500]:[500,900];
 export const defaultDetails:Record<string,string>={name:"김메리",role:"메리츠화재 파트너스",title:"멘토",mobile:"010-1234-5678",fax:"FAX 0505-123-4567",email:"example@example.com",web:"www.meritzfire.com",company:"메리츠화재해상보험(주)",address:"서울특별시 강남구 강남대로 382, meritz TOWER"};
-const previousDemoDetails:Record<string,string>={name:"박서연",role:"파트너스 강남센터",title:"지점장",mobile:"Mobile 010-8954-4743",fax:"Fax 0505-048-8572",email:"people38000@gmail.com",address:"서울특별시 강남구 테헤란로98길 8 (대치동)\n2층 메리츠화재 (대치동, KOSMO DAECHI), 06181"};
 const text=(id:string,label:string,value:string,x:number,y:number,width:number,size:number,bold=false,color="#171717"):CardElement=>({id,label,kind:"text",text:value,x,y,width,size,bold,color,rotation:0,visible:true});
 export const imageElement=(id:string,asset:ImageAsset,x:number,y:number,width:number):CardElement=>({...asset,assetId:asset.id,id,kind:"image",x,y,width,size:0,color:"#171717",bold:false,rotation:0,visible:true});
 export function makeInitial():CardState {
@@ -54,8 +53,6 @@ export function restoreState(value:unknown):CardState {
   const next=structuredClone(s);next.version=3;
   for(const o of ["horizontal","vertical"] as const)for(const side of ["front","back"] as const){const card=next.cards[o][side];
     if(card.background==="#202622")card.background="#171717";for(const e of card.elements){if(e.fontFamily)e.fontFamily=getCardFont(e.fontFamily).family;if(e.color==="#202622")e.color="#171717";if(e.color==="#e93324")e.color="#ef3219";}
-    const previousDemo=side==="front"&&card.elements.find(e=>e.id==="name")?.text===previousDemoDetails.name&&card.elements.find(e=>e.id==="role")?.text===previousDemoDetails.role;
-    if(previousDemo)for(const e of card.elements)if(e.kind==="text"&&previousDemoDetails[e.id]!==undefined&&e.text===previousDemoDetails[e.id])e.text=defaultDetails[e.id];
     card.elements=card.elements.filter(e=>!(e.kind==="image"&&(e.assetId?.startsWith("meritz:reference-originals/")||e.src?.includes("/reference-originals/")||(side==="front"&&e.id==="logo-ko"&&e.assetId==="meritz-ko")||e.assetId==="worry-doll"||e.src==="/assets/worry-doll.png"||e.id==="doll"&&!e.src)));
     const customExtras=card.elements.some(e=>e.kind==="text"&&e.label==="추가 텍스트"&&e.text!=="새로운 문구");let keptPlaceholder=false;
     card.elements=card.elements.filter(e=>{if(e.kind!=="text"||e.label!=="추가 텍스트"||e.text!=="새로운 문구")return true;if(customExtras||keptPlaceholder)return false;keptPlaceholder=true;return true;});
